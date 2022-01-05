@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage{txfonts}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+\setlength\parindent{0pt}
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\noindent\\}
+
+\bibliographystyle{agsm}
+
+\begin{document} 
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    \Input{a coordinate $c$, offset = $\frac{boundary}{size-1}$, $size$ of image partition}
+    \Output{an image $I$ of dimensions $size \times size$ and entropy $e$} 
+    \BlankLine
+    $cx \leftarrow c.re$\;
+    \For{$x \leftarrow 0$ \KwTo $size-1$}{
+        \For{$y \leftarrow 0$ \KwTo $size-1$}{
+            $z \leftarrow 0$\;
+            \For{$iteration \leftarrow 1$ \KwTo $\text{maxIterations}$}{
+                $z \leftarrow z^2 + c$\;
+                \If{$|z| > 4$}{
+                    break\;
+                }
+            }
+            \If{$iteration = \text{maxIterations}$}{
+                $I[x][y] = black$\;
+            }
+            \Else{
+                $I[x][y] = colorFunction(iteration)$\;
+            }
+            $c.re = c.re + \text{offset}.re$\;
+        }
+        $c.re = cx$\;
+        $c.im = c.im - \text{offset}.im$\;
+    }
+    \text{Compute the entropy of $I$ and store it as $e$}\;
+    \KwRet $I$, $e$\;
+    \caption{calculatePartition(c, offset, size, maxIterations)}
+\end{algorithm}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+    \SetKwInOut{Input}{Input}
+    \SetKwInOut{Output}{Output}
+    \Input{a datatructure of settings $S$}
+    \Output{a computed image $I$ and coordinate of partition with most entropy $c$} 
+    \BlankLine
+    \text{Populate and send the partitions to the follower processes}\;
+    \text{Receive each partition into the set of partitions $P$}\;
+    $I \leftarrow (S.size, S.size)$\;
+    $maxEntropy \leftarrow -\infty$\;
+    \ForEach{$p \in P$}{
+        \text{Combine partial solution $p.I$ into $I$}\;
+        \If{$p.entropy > maxEntropy$}{
+            $maxEntropy \leftarrow p.entropy$\;
+            $successorPartition \leftarrow p$\;
+        }
+    }
+    $c \leftarrow successorPartition.c$\;
+    \KwRet $I$, $c$\;
+    \caption{performIteration($S$)}
+\end{algorithm}
+
+\end{document}
+
+%%%% End of aa.dem
